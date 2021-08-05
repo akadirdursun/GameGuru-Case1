@@ -1,12 +1,15 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GridManager : MonoBehaviour
 {
     [SerializeField] private int n;
     [SerializeField] private GameObject gridTilePrefab;
+    [Header("UI")]
+    [SerializeField] private Text nInputTextField;
 
-    private List<GameObject> gridTileList = new List<GameObject>();
+    private List<GridTile> gridTileList = new List<GridTile>();
     private Camera cam;
     private SpriteRenderer spriteRenderer;
 
@@ -17,7 +20,12 @@ public class GridManager : MonoBehaviour
         BuildTheGrid();
     }
 
-    public void BuildTheGrid()
+    public void RebuildTheGrid()
+    {
+        n = int.Parse(nInputTextField.text);
+        BuildTheGrid();
+    }
+    private void BuildTheGrid()
     {
         ClearOldGrid();
         ScaleGridTiles();
@@ -28,18 +36,20 @@ public class GridManager : MonoBehaviour
         {
             for (int y = 0; y < n; y++)
             {
-                GameObject tile = Instantiate(gridTilePrefab, transform);
-                tile.transform.position = topLeftCorner + new Vector2(x * offset.x, -(y * offset.y));
-                gridTileList.Add(tile);
+                GridTile gridTile = Instantiate(gridTilePrefab, transform).GetComponent<GridTile>();
+                gridTile.transform.position = topLeftCorner + new Vector2(x * offset.x, -(y * offset.y));
+                gridTile.GridPos = new Vector2(x, y);
+                gridTileList.Add(gridTile);
             }
         }
     }
 
     private void ClearOldGrid()
     {
+        GameManager.Instance.ResetTheGame();
         for (int i = gridTileList.Count - 1; i >= 0; i--)
         {
-            Destroy(gridTileList[i]);
+            Destroy(gridTileList[i].gameObject);
             gridTileList.RemoveAt(i);
         }
     }
@@ -49,28 +59,4 @@ public class GridManager : MonoBehaviour
         float w = cam.ViewportToWorldPoint(Vector2.one).x * 2;
         gridTilePrefab.transform.localScale = Vector2.one * (w / n);
     }
-
-    private void OnDisable()
-    {
-        gridTilePrefab.transform.localScale = Vector2.one;
-    }
-
-    //private void garbage()
-    //{
-    //    ClearOldGrid();
-    //    ScaleGridTiles();
-    //    Vector2 spawnPos = cam.ScreenToWorldPoint(new Vector2(0, Screen.height));
-    //    Vector2 offset = spriteRenderer.bounds.size;
-    //    Debug.Log(spriteRenderer.bounds.size);
-    //    Debug.Log(offset.x);
-    //    for (int i = 0; i < n; i++)
-    //    {
-    //        for (int j = 0; j < n; j++)
-    //        {
-    //            GameObject tile = Instantiate(gridTilePrefab, transform);
-    //            tile.transform.position = new Vector2((i * offset.x) - (offset.x / 2), spawnPos.y - (j * offset.y) - ((offset.y / 2)));
-    //            gridTileList.Add(tile);
-    //        }
-    //    }
-    //}
 }
